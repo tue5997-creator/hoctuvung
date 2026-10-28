@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Học Từ Vựng Tiếng Anh - Kinh Doanh</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        :root { --primary: #2563eb; --secondary: #64748b; --success: #10b981; --light: #f1f5f9; --white: #ffffff; --shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        body { background: linear-gradient(135deg, #eff6ff 0%, #e0f2fe 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { color: #1e40af; font-size: 2rem; margin-bottom: 10px; }
+        .subtitle { color: #475569; font-size: 1.1rem; }
+        .controls { background: var(--white); padding: 20px; border-radius: 12px; box-shadow: var(--shadow); margin-bottom: 25px; }
+        .search-box { width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; margin-bottom: 15px; transition: border-color 0.3s; }
+        .search-box:focus { outline: none; border-color: var(--primary); }
+        .filter-buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+        .filter-btn { padding: 10px 18px; border: none; border-radius: 8px; background: #e2e8f0; cursor: pointer; transition: all 0.3s; font-weight: 500; }
+        .filter-btn.active { background: var(--primary); color: white; }
+        .view-controls { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .view-btn { padding: 8px 16px; border-radius: 6px; border: 2px solid var(--primary); background: white; color: var(--primary); cursor: pointer; font-weight: 500; transition: all 0.2s; }
+        .view-btn:hover, .view-btn.active { background: var(--primary); color: white; }
+        .stats { margin-top: 15px; color: var(--secondary); font-size: 0.95rem; }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+        .word-card { background: white; border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; transition: transform 0.3s, box-shadow 0.3s; cursor: pointer; perspective: 1000px; }
+        .word-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
+        .card-inner { position: relative; width: 100%; height: 160px; transition: transform 0.6s; transform-style: preserve-3d; }
+        .word-card.flipped .card-inner { transform: rotateY(180deg); }
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; }
+        .card-front { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; }
+        .card-back { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; transform: rotateY(180deg); }
+        .en-word { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; }
+        .topic-tag { font-size: 0.75rem; background: rgba(255,255,255,0.25); padding: 3px 10px; border-radius: 20px; }
+        .vi-meaning { font-size: 1.2rem; line-height: 1.5; }
+        .table-view { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); display: none; }
+        .table-view th, .table-view td { padding: 14px 18px; text-align: left; background: white; border-bottom: 1px solid #e2e8f0; }
+        .table-view th { background: var(--primary); color: white; font-weight: 600; }
+        .table-view tr:hover td { background: #f0fdf4; }
+        .topic-cell { font-size: 0.8rem; color: var(--secondary); }
+        .hidden-meaning { color: transparent; background: #cbd5e1; border-radius: 4px; user-select: none; }
+        .show-meaning .hidden-meaning { color: inherit; background: transparent; }
+        .toggle-all-btn { margin-left: auto; display: block; margin-bottom: 15px; padding: 8px 20px; background: var(--success); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; }
+        footer { text-align: center; margin-top: 40px; color: var(--secondary); font-size: 0.9rem; }
+        @media (max-width: 768px) { .card-grid { grid-template-columns: 1fr; } h1 { font-size: 1.5rem; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Học Từ Vựng Tiếng Anh</h1>
+            <p class="subtitle">Chủ đề: Kinh doanh - Địa điểm • Nghề nghiệp • Hành động</p>
+        </header>
+
+        <div class="controls">
+            <input type="text" class="search-box" id="searchInput" placeholder="🔍 Tìm từ vựng...">
+            
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-topic="all">Tất cả</button>
+                <button class="filter-btn" data-topic="places">Địa điểm & Tổ chức</button>
+                <button class="filter-btn" data-topic="jobs">Nghề nghiệp</button>
+                <button class="filter-btn" data-topic="actions1">Hành động - Phần 1</button>
+                <button class="filter-btn" data-topic="actions2">Hành động - Phần 2</button>
+                <button class="filter-btn" data-topic="actions3">Hành động - Phần 3</button>
+            </div>
+
+            <div class="view-controls">
+                <button class="view-btn active" data-view="card">🃏 Thẻ lật</button>
+                <button class="view-btn" data-view="table">📋 Bảng</button>
+                <button class="view-btn" id="hideMeaningBtn">🙈 Ẩn nghĩa</button>
+            </div>
+
+            <div class="stats" id="statsInfo">Tổng số: 198 từ vựng</div>
+        </div>
+
+        <button class="toggle-all-btn" id="flipAllBtn">🔄 Lật tất cả</button>
+
+        <!-- Khung thẻ lật -->
+        <div class="card-grid" id="cardContainer"></div>
+
+        <!-- Khung bảng -->
+        <table class="table-view" id="tableContainer">
+            <thead>
+                <tr>
+                    <th width="8%">#</th>
+                    <th width="32%">Tiếng Anh</th>
+                    <th width="40%">Tiếng Việt</th>
+                    <th width="20%">Chủ đề</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <footer>
+        <p>💡 Nhấp vào thẻ để xem nghĩa | Tìm kiếm nhanh | Lọc theo chủ đề</p>
+    </footer>
+
+    <script>
+        // DỮ LIỆU TỪ VỰNG
+        const vocabulary = [
+            // ===== PHẦN 1: Địa điểm & Tổ chức =====
+            { topic: "places", en: "restaurant", vi: "nhà hàng" },
+            { topic: "places", en: "ticket office", vi: "phòng vé" },
+            { topic: "places", en: "architecture firm", vi: "công ty kiến trúc" },
+            { topic: "places", en: "construction company", vi: "công ty xây dựng" },
+            { topic: "places", en: "real estate agency", vi: "đại lý bất động sản" },
+            { topic: "places", en: "radio station", vi: "đài phát thanh" },
+            { topic: "places", en: "recording studio", vi: "phòng thu âm" },
+            { topic: "places", en: "electronics manufacturer", vi: "nhà sản xuất điện tử" },
+            { topic: "places", en: "newspaper", vi: "tòa báo" },
+            { topic: "places", en: "department store", vi: "cửa hàng bách hóa" },
+            { topic: "places", en: "pharmacy", vi: "nhà thuốc" },
+            { topic: "places", en: "dry cleaner", vi: "tiệm giặt khô" },
+            { topic: "places", en: "home goods store", vi: "cửa hàng đồ gia dụng" },
+            { topic: "places", en: "utility company", vi: "công ty điện nước / dịch vụ tiện ích" },
+            { topic: "places", en: "apartment management agency", vi: "cơ quan quản lý căn hộ" },
+            { topic: "places", en: "theater", vi: "rạp hát" },
+            { topic: "places", en: "gardening store", vi: "cửa hàng đồ làm vườn" },
+            { topic: "places", en: "convention center", vi: "trung tâm hội nghị" },
+            { topic: "places", en: "accounting", vi: "kế toán" },
+            { topic: "places", en: "product development", vi: "phát triển sản phẩm" },
+            { topic: "places", en: "seaport", vi: "cảng biển" },
+            { topic: "places", en: "travel agency", vi: "đại lý du lịch" },
+            { topic: "places", en: "shipping company", vi: "công ty vận chuyển" },
+            { topic: "places", en: "security firm", vi: "công ty an ninh" },
+            { topic: "places", en: "publishing company", vi: "công ty xuất bản" },
+            { topic: "places", en: "toy manufacturer", vi: "nhà sản xuất đồ chơi" },
+            { topic: "places", en: "financial institution", vi: "tổ chức tài chính" },
+            { topic: "places", en: "office supply company", vi: "công ty đồ dùng văn phòng" },
+            { topic: "places", en: "catering company", vi: "công ty dịch vụ ăn uống" },
+            { topic: "places", en: "warehouse", vi: "nhà kho" },
+            { topic: "places", en: "kitchen appliance store", vi: "cửa hàng thiết bị nhà bếp" },
+            { topic: "places", en: "community center", vi: "trung tâm cộng đồng" },
+            { topic: "places", en: "awards ceremony", vi: "lễ trao giải thưởng" },
+            { topic: "places", en: "film festival", vi: "lễ hội phim" },
+            { topic: "places", en: "sales conference", vi: "hội thảo bán hàng" },
+            { topic: "places", en: "gallery opening", vi: "khai trương triển lãm" },
+            { topic: "places", en: "advertising firm", vi: "công ty quảng cáo" },
+            { topic: "places", en: "airline company", vi: "công ty hàng không" },
+            { topic: "places", en: "budget hotel", vi: "khách sạn giá rẻ" },
+            { topic: "places", en: "hotel lobby", vi: "sảnh khách sạn" },
+            { topic: "places", en: "research foundation", vi: "tổ chức nghiên cứu" },
+            { topic: "places", en: "clothing store", vi: "cửa hàng quần áo" },
+            { topic: "places", en: "fitness center", vi: "trung tâm thể hình" },
+            { topic: "places", en: "sport arena", vi: "sân vận động / nhà thi đấu thể thao" },
+            { topic: "places", en: "furniture factory", vi: "nhà máy đồ nội thất" },
+            { topic: "places", en: "stationery store", vi: "cửa hàng văn phòng phẩm" },
+            { topic: "places", en: "technical support company", vi: "công ty hỗ trợ kỹ thuật" },
+            { topic: "places", en: "concert", vi: "buổi hòa nhạc" },
+            { topic: "places", en: "farmer's market", vi: "chợ nông sản" },
+            { topic: "places", en: "tailor shop", vi: "cửa hàng may" },
+            { topic: "places", en: "rental car agency", vi: "đại lý cho thuê ô tô" },
+            { topic: "places", en: "chemistry laboratory", vi: "phòng thí nghiệm hóa học" },
+            { topic: "places", en: "employment agency", vi: "đại lý tuyển dụng" },
+            { topic: "places", en: "art gallery opening", vi: "khai trương triển lãm nghệ thuật" },
+            { topic: "places", en: "automobile show", vi: "triển lãm ô tô" },
+            { topic: "places", en: "technology exhibition", vi: "triển lãm công nghệ" },
+            { topic: "places", en: "cooking demonstration", vi: "buổi trình diễn nấu ăn" },
+            
+            // ===== PHẦN 2: Nghề nghiệp =====
+            { topic: "jobs", en: "florist", vi: "người bán hoa" },
+            { topic: "jobs", en: "travel agent", vi: "đại lý du lịch" },
+            { topic: "jobs", en: "postal worker", vi: "nhân viên bưu điện" },
+            { topic: "jobs", en: "financial analyst", vi: "nhà phân tích tài chính" },
+            { topic: "jobs", en: "software salesperson", vi: "nhân viên bán phần mềm" },
+            { topic: "jobs", en: "computer technician", vi: "kỹ thuật viên máy tính" },
+            { topic: "jobs", en: "graphic designer", vi: "nhà thiết kế đồ họa" },
+            { topic: "jobs", en: "appliance store employee", vi: "nhân viên cửa hàng thiết bị" },
+            { topic: "jobs", en: "safety inspector", vi: "thanh tra an toàn" },
+            { topic: "jobs", en: "overseas client", vi: "khách hàng nước ngoài" },
+            { topic: "jobs", en: "athlete", vi: "vận động viên" },
+            { topic: "jobs", en: "accountant", vi: "kế toán viên" },
+            { topic: "jobs", en: "property manager", vi: "quản lý tài sản" },
+            { topic: "jobs", en: "car mechanic", vi: "thợ sửa chữa ô tô" },
+            { topic: "jobs", en: "movie producer", vi: "nhà sản xuất phim" },
+            { topic: "jobs", en: "music composer", vi: "nhà soạn nhạc" },
+            { topic: "jobs", en: "sports journalist", vi: "phóng viên thể thao" },
+            { topic: "jobs", en: "locksmith", vi: "thợ khóa" },
+            { topic: "jobs", en: "security guard", vi: "nhân viên bảo vệ" },
+            { topic: "jobs", en: "sales representative", vi: "nhân viên bán hàng" },
+            { topic: "jobs", en: "event caterer", vi: "nhân viên phục vụ sự kiện" },
+            { topic: "jobs", en: "computer programmer", vi: "lập trình viên máy tính" },
+            { topic: "jobs", en: "airplane pilot", vi: "phi công" },
+            { topic: "jobs", en: "radio show host", vi: "người dẫn chương trình phát thanh" },
+
+            // ===== PHẦN 3: Hành động 1 =====
+            { topic: "actions1", en: "get directions", vi: "hỏi / xin chỉ đường" },
+            { topic: "actions1", en: "ask for a discount", vi: "yêu cầu giảm giá" },
+            { topic: "actions1", en: "change a reservation", vi: "thay đổi đặt chỗ" },
+            { topic: "actions1", en: "celebrate a contract", vi: "ăn mừng ký kết hợp đồng" },
+            { topic: "actions1", en: "evaluate a business", vi: "đánh giá doanh nghiệp" },
+            { topic: "actions1", en: "prepare for a meeting", vi: "chuẩn bị cho cuộc họp" },
+            { topic: "actions1", en: "interview for a job", vi: "phỏng vấn xin việc" },
+            { topic: "actions1", en: "computer training classes", vi: "lớp đào tạo sử dụng máy tính" },
+            { topic: "actions1", en: "improve photography skills", vi: "cải thiện kỹ năng chụp ảnh" },
+            { topic: "actions1", en: "online self-publishing tips", vi: "mẹo tự xuất bản trực tuyến" },
+            { topic: "actions1", en: "interview job applicants", vi: "phỏng vấn ứng viên" },
+            { topic: "actions1", en: "make promotion decisions", vi: "đưa ra quyết định thăng chức" },
+            { topic: "actions1", en: "prepare for an urgent project", vi: "chuẩn bị dự án khẩn cấp" },
+            { topic: "actions1", en: "attract international clients", vi: "thu hút khách hàng quốc tế" },
+            { topic: "actions1", en: "lead a workshop", vi: "chủ trì hội thảo" },
+            { topic: "actions1", en: "start an internship", vi: "bắt đầu kỳ thực tập" },
+            { topic: "actions1", en: "select conference participants", vi: "chọn người tham dự hội nghị" },
+            { topic: "actions1", en: "finalize an agreement", vi: "hoàn tất thỏa thuận" },
+            { topic: "actions1", en: "research a news article", vi: "tìm hiểu nội dung bài báo" },
+            { topic: "actions1", en: "computer malfunction", vi: "sự cố máy tính" },
+            { topic: "actions1", en: "billing error", vi: "lỗi thanh toán" },
+            { topic: "actions1", en: "arrange a business trip", vi: "sắp xếp chuyến công tác" },
+            { topic: "actions1", en: "pick up some samples", vi: "đến lấy mẫu sản phẩm" },
+            { topic: "actions1", en: "tour a facility", vi: "tham quan cơ sở" },
+            { topic: "actions1", en: "vendor price list", vi: "bảng giá nhà cung cấp" },
+            { topic: "actions1", en: "musical performance", vi: "buổi biểu diễn âm nhạc" },
+            { topic: "actions1", en: "press conference", vi: "cuộc họp báo" },
+            { topic: "actions1", en: "market products", vi: "tiếp thị sản phẩm" },
+            { topic: "actions1", en: "attend a convention", vi: "tham dự hội nghị" },
+            { topic: "actions1", en: "management seminar", vi: "hội thảo quản lý" },
+            { topic: "actions1", en: "find out hours of operation", vi: "tra cứu giờ làm việc" },
+            { topic: "actions1", en: "corporate fund-raiser", vi: "sự kiện gây quỹ công ty" },
+            { topic: "actions1", en: "complain about repair work", vi: "phàn nàn về công việc sửa chữa" },
+            { topic: "actions1", en: "ask about a loan", vi: "hỏi về khoản vay" },
+            { topic: "actions1", en: "make a payment", vi: "thực hiện thanh toán" },
+            { topic: "actions1", en: "request an extension", vi: "yêu cầu gia hạn" },
+            { topic: "actions1", en: "cancel a registration", vi: "hủy đăng ký" },
+            { topic: "actions1", en: "obtain course information", vi: "lấy thông tin khóa học" },
+            { topic: "actions1", en: "pay a utility bill", vi: "thanh toán hóa đơn tiện ích" },
+            { topic: "actions1", en: "arrange for a delivery", vi: "sắp xếp giao hàng" },
+            { topic: "actions1", en: "inquire about a reservation", vi: "hỏi thông tin đặt chỗ" },
+            { topic: "actions1", en: "request directions to an event", vi: "hỏi đường đến sự kiện" },
+            { topic: "actions1", en: "fix a scheduling error", vi: "sửa lỗi lịch trình" },
+            { topic: "actions1", en: "arrange a consultation", vi: "sắp xếp buổi tư vấn" },
+            { topic: "actions1", en: "register for a workshop", vi: "đăng ký tham dự hội thảo" },
+
+            // ===== PHẦN 4: Hành động 2 =====
+            { topic: "actions2", en: "proof of payment", vi: "bằng chứng thanh toán" },
+            { topic: "actions2", en: "account number", vi: "số tài khoản" },
+            { topic: "actions2", en: "photo identification", vi: "giấy tờ tùy thân có ảnh" },
+            { topic: "actions2", en: "packaging supplies", vi: "vật tư đóng gói" },
+            { topic: "actions2", en: "refund a deposit", vi: "hoàn trả tiền đặt cọc" },
+            { topic: "actions2", en: "put out a sign", vi: "treo/đặt biển hiệu" },
+            { topic: "actions2", en: "extend business hours", vi: "kéo dài giờ làm việc" },
+            { topic: "actions2", en: "arrange a press conference", vi: "tổ chức cuộc họp báo" },
+            { topic: "actions2", en: "test some equipment", vi: "kiểm tra thiết bị" },
+            { topic: "actions2", en: "present a proposal", vi: "trình bày đề xuất" },
+            { topic: "actions2", en: "edit journal article", vi: "biên tập bài báo tạp chí" },
+            { topic: "actions2", en: "develop a web design", vi: "thiết kế giao diện trang web" },
+            { topic: "actions2", en: "send a résumé", vi: "gửi sơ yếu lý lịch" },
+            { topic: "actions2", en: "check a catalog", vi: "xem danh mục sản phẩm" },
+            { topic: "actions2", en: "measure some fabric", vi: "đo vải" },
+            { topic: "actions2", en: "change a display", vi: "thay đổi cách trưng bày" },
+            { topic: "actions2", en: "write new product descriptions", vi: "viết mô tả sản phẩm mới" },
+            { topic: "actions2", en: "get consumer feedback", vi: "nhận phản hồi từ khách hàng" },
+            { topic: "actions2", en: "use a professional service", vi: "sử dụng dịch vụ chuyên nghiệp" },
+            { topic: "actions2", en: "negotiate with a seller", vi: "đàm phán với người bán" },
+            { topic: "actions2", en: "show an alternate property", vi: "giới thiệu bất động sản thay thế" },
+            { topic: "actions2", en: "study regulations", vi: "nghiên cứu quy định" },
+            { topic: "actions2", en: "contact a construction company", vi: "liên hệ công ty xây dựng" },
+            { topic: "actions2", en: "schedule a repair", vi: "đặt lịch sửa chữa" },
+            { topic: "actions2", en: "issue a refund", vi: "hoàn tiền" },
+            { topic: "actions2", en: "make an announcement", vi: "đưa ra thông báo" },
+            { topic: "actions2", en: "revise a résumé", vi: "chỉnh sửa sơ yếu lý lịch" },
+            { topic: "actions2", en: "look at a job description", vi: "xem mô tả công việc" },
+            { topic: "actions2", en: "edit a report", vi: "biên tập báo cáo" },
+            { topic: "actions2", en: "advertise in a professional journal", vi: "quảng cáo trên tạp chí chuyên ngành" },
+            { topic: "actions2", en: "review an invoice", vi: "kiểm tra hóa đơn" },
+            { topic: "actions2", en: "design an invitation", vi: "thiết kế thiệp mời" },
+            { topic: "actions2", en: "inspect a space", vi: "khảo sát địa điểm" },
+            { topic: "actions2", en: "speak with a contractor", vi: "trao đổi với nhà thầu" },
+            { topic: "actions2", en: "sign a document", vi: "ký tài liệu" },
+            { topic: "actions2", en: "e-mail coworkers", vi: "gửi email cho đồng nghiệp" },
+            { topic: "actions2", en: "call a client", vi: "gọi cho khách hàng" },
+            { topic: "actions2", en: "leave a voice-mail message", vi: "để lại tin nhắn thoại" },
+            { topic: "actions2", en: "provide medical records", vi: "cung cấp hồ sơ y tế" },
+            { topic: "actions2", en: "work on a problem", vi: "giải quyết vấn đề" },
+            { topic: "actions2", en: "design an illustration", vi: "thiết kế hình minh họa" },
+            { topic: "actions2", en: "hire a consultant", vi: "thuê chuyên gia tư vấn" },
+            { topic: "actions2", en: "reserve computer equipment", vi: "đặt trước thiết bị máy tính" },
+            { topic: "actions2", en: "provide written feedback", vi: "đưa ra phản hồi bằng văn bản" },
+            { topic: "actions2", en: "choose a catering service", vi: "chọn đơn vị phục vụ ăn uống" },
+            { topic: "actions2", en: "market a product", vi: "tiếp thị sản phẩm" },
+            { topic: "actions2", en: "mail a form", vi: "gửi biểu mẫu qua bưu điện" },
+            { topic: "actions2", en: "read about a performer", vi: "tìm hiểu về nghệ sĩ biểu diễn" },
+            { topic: "actions2", en: "send out an invitation", vi: "gửi thiệp mời" },
+            { topic: "actions2", en: "postpone an event", vi: "dời thời gian sự kiện" },
+            { topic: "actions2", en: "submit a proposal", vi: "nộp đề xuất" },
+            { topic: "actions2", en: "contact a supervisor", vi: "liên hệ người quản lý" },
+            { topic: "actions2", en: "review sales figures", vi: "phân tích số liệu bán hàng" },
+            { topic: "actions2", en: "travel to a conference", vi: "đi tham dự hội nghị" },
+            { topic: "actions2", en: "refund a charge", vi: "hoàn trả khoản phí" },
+            { topic: "actions2", en: "participate in a research study", vi: "tham gia nghiên cứu" },
+            { topic: "actions2", en: "give a recommendation", vi: "đưa ra lời khuyên / đề xuất" },
+
+            // ===== PHẦN 5: Hành động 3 =====
+            { topic: "actions3", en: "print a parking pass", vi: "in thẻ đỗ xe" },
+            { topic: "actions3", en: "hire additional staff", vi: "tuyển thêm nhân viên" },
+            { topic: "actions3", en: "place an order", vi: "đặt hàng" },
+            { topic: "actions3", en: "purchase a warranty", vi: "mua gói bảo hành" },
+            { topic: "actions3", en: "return merchandise", vi: "trả lại hàng hóa" },
+            { topic: "actions3", en: "call a specialist", vi: "gọi chuyên gia" },
+            { topic: "actions3", en: "estimate costs", vi: "ước tính chi phí" },
+            { topic: "actions3", en: "rehearse a presentation", vi: "diễn tập bài thuyết trình" },
+            { topic: "actions3", en: "call technical support", vi: "gọi bộ phận hỗ trợ kỹ thuật" },
+            { topic: "actions3", en: "exchange contact information", vi: "trao đổi thông tin liên lạc" },
+            { topic: "actions3", en: "consult with a colleague", vi: "tham khảo ý kiến đồng nghiệp" },
+            { topic: "actions3", en: "look at a brochure", vi: "xem tờ giới thiệu" },
+            { topic: "actions3", en: "pay a fee in advance", vi: "trả trước phí" },
+            { topic: "actions3", en: "register online", vi: "đăng ký trực tuyến" },
+            { topic: "actions3", en: "complete a survey", vi: "hoàn thành khảo sát" },
+            { topic: "actions3", en: "research a topic", vi: "nghiên cứu chủ đề" },
+            { topic: "actions3", en: "develop an employee handbook", vi: "soạn sổ tay nhân viên" },
+            { topic: "actions3", en: "ask volunteers to work overtime", vi: "yêu cầu nhân viên làm thêm giờ" },
+            { topic: "actions3", en: "request a deadline extension", vi: "xin gia hạn thời hạn" },
+            { topic: "actions3", en: "inform a client of a delay", vi: "thông báo sự chậm trễ cho khách hàng" },
+            { topic: "actions3", en: "paint a ceiling", vi: "sơn trần nhà" },
+            { topic: "actions3", en: "arrange a tour", vi: "tổ chức chuyến tham quan" },
+            { topic: "actions3", en: "advertise a job opening", vi: "đăng thông báo tuyển dụng" },
+            { topic: "actions3", en: "join a professional association", vi: "tham gia hiệp hội nghề nghiệp" },
+            { topic: "actions3", en: "attend a product demonstration", vi: "tham dự buổi giới thiệu sản phẩm" },
+            { topic: "actions3", en: "prepare an invoice", vi: "lập hóa đơn" },
+            { topic: "actions3", en: "purchase souvenirs", vi: "mua đồ lưu niệm" },
+            { topic: "actions3", en: "gather feedback", vi: "thu thập ý kiến phản hồi" },
+            { topic: "actions3", en: "speak to a receptionist", vi: "nói chuyện với nhân viên lễ tân" }
+        ];
